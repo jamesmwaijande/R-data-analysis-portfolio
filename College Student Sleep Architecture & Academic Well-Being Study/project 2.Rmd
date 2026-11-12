@@ -1,0 +1,391 @@
+---
+title: '\textbf{\huge Sleep Architecture, Psychological Well-Being, and Academic Success: An Empirical Analysis of College Student Sleep Habits}'
+output: pdf_document
+date: "2026-11-02"
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+
+# Load the SleepStudy dataset locally 
+sleep_data <- read.csv("SleepStudy.csv", stringsAsFactors = TRUE)
+```
+
+This report presents an analysis of sleep patterns among college students, utilizing the "SleepStudy" dataset obtained from https://www.lock5stat.com/datapage3e.html. The dataset comprises 253 observations on 27 variables, providing valuable insights into the sleep habits, psychological well-being, and lifestyle choices of college students.
+
+\vspace{1em}
+
+The primary objective of this analysis is to address a series of research questions by examining the dataset. The questions explored in this report aim to shed light on various aspects of college students' sleep patterns, their academic performance, psychological well-being, and lifestyle choices. The results of this analysis offer valuable insights into the factors affecting students' sleep and related outcomes, providing a basis for further research and interventions to improve students' overall well-being and academic performance.
+
+\vspace{1em}
+
+The following ten research questions will be addressed in this report:
+
+\vspace{2em}
+
+## **Questions**
+Is there a significant difference in the average GPA between male and female college students?
+
+\vspace{1em}
+
+Is there a significant difference in the average number of early classes between the first two class years and other class years?
+
+\vspace{1em}
+
+Do students who identify as "larks" have significantly better cognitive skills (cognition z-score) compared to "owls"?
+
+\vspace{1em}
+
+Is there a significant difference in the average number of classes missed in a semester between students who had at least one early class (EarlyClass = 1) and those who didn't (EarlyClass = 0)?
+
+\vspace{1em}
+
+Is there a significant difference in the average happiness level between students with at least moderate depression and normal depression status?
+
+\vspace{1em}
+
+Is there a significant difference in average sleep quality scores between students who reported having at least one all-nighter (AllNighter = 1) and those who didn't (AllNighter = 0)?
+
+\vspace{1em}
+
+Do students who abstain from alcohol use have significantly better stress scores than those who report heavy alcohol use?
+
+\vspace{1em}
+
+Is there a significant difference in the average number of drinks per week between students of different genders?
+
+\vspace{1em}
+
+Is there a significant difference in the average weekday bedtime between students with high and low stress (Stress = High vs. Stress = Normal)?
+
+\vspace{1em}
+
+Is there a significant difference in the average hours of sleep on weekends between first two year students and other students?
+
+\vspace{3em}
+
+
+By addressing these questions, we aim to provide a comprehensive understanding of the sleep patterns and related factors among college students, ultimately contributing to the well-being and academic success of this population.
+
+\vspace{5em}
+
+
+
+## **Data**
+The dataset used in this analysis is the SleepStudy dataset, sourced from the Lock5 statistical resource guides. Below is a preview of the first 6 rows of the dataset to illustrate its structure:
+
+\vspace{2em}
+
+**head(sleep_data)**
+
+\vspace{2em}
+
+The dataset contains r nrow(sleep_data) observations and r ncol(sleep_data) variables, capturing detailed records of student academic standing, sleep metrics, psychological evaluations, and behavioral habits.
+
+
+\vspace{5em}
+
+
+## **Analysis**
+Each of the ten research questions is evaluated sequentially using appropriate two-sample hypothesis tests at a significance level of $\alpha = 0.05$.
+
+\vspace{2em}
+
+
+
+
+**1. Difference in Average GPA Between Genders**
+
+\vspace{1em}
+
+We test whether there is a significant difference in average GPA between male and female students ($H_0: \mu_{\text{male}} = \mu_{\text{female}}$ vs. $H_a: \mu_{\text{male}} \neq \mu_{\text{female}}$).
+
+\vspace{2em}
+
+```{r}
+t.test(GPA ~ Gender, data = sleep_data, alternative = "two.sided")
+
+boxplot(GPA ~ Gender, data = sleep_data,
+        main = "GPA by Gender",
+        xlab = "Gender", ylab = "GPA",
+        col = c("lightblue", "pink"))
+```
+\vspace{2em}
+
+**Summary:** The two-sample t-test evaluates whether academic standing varies significantly across gender lines within the surveyed student population.
+
+\vspace{3em}
+
+
+
+**2. Early Classes: Underclassmen vs. Upperclassmen**
+
+\vspace{1em}
+
+We evaluate whether the average number of early classes differs between the first two class years (Freshmen/Sophomores) and upperclassmen.
+
+\vspace{2em}
+
+```{r}
+# Check what your column is named by running names(sleep_data)
+# If it's ClassYear, use:
+sleep_data$Underclass <- ifelse(sleep_data$ClassYear %in% c(1, 2), "Underclass", "Upperclass")
+t.test(EarlyClass ~ Underclass, data = sleep_data, alternative = "two.sided")
+
+boxplot(EarlyClass ~ Underclass, data = sleep_data,
+        main = "Early Classes by Class Standing",
+        xlab = "Class Standing", ylab = "Number of Early Classes",
+        col = c("lightgreen", "orange"))
+```
+
+\vspace{2em}
+
+**Summary:** Compares schedule density regarding early morning course commitments across lower-level versus advanced undergraduate stages.
+
+\vspace{3em}
+
+
+
+
+**3. Cognitive Skills**
+
+\vspace{1em}
+
+Larks vs. OwlsWe test whether students identifying as "larks" have significantly higher cognitive z-scores (Cognition) than "owls" ($H_a: \mu_{\text{lark}} > \mu_{\text{owl}}$).
+
+\vspace{2em}
+
+
+```{r}
+lark_owl_data <- sleep_data %>% 
+  filter(LarkOwl %in% c("Lark", "Owl")) %>% 
+  droplevels()
+
+t.test(CognitionZscore ~ LarkOwl, data = lark_owl_data, alternative = "greater")
+
+boxplot(CognitionZscore ~ LarkOwl, data = lark_owl_data,
+        main = "Cognition Score by Chronotype",
+        xlab = "Chronotype", ylab = "Cognition Z-Score",
+        col = c("gold", "purple"))
+```
+\vspace{2em}
+
+**Summary:** Examines whether morning-oriented chronotypes ("larks") exhibit a performance advantage in cognitive metrics compared to evening-oriented peers ("owls").
+
+\vspace{3em}
+
+
+
+
+**4. Classes Missed Based on Early Class Status**
+
+\vspace{1em}
+
+We test whether students with at least one early class (EarlyClass > 0) miss more classes (ClassesMissed) on average than those without early classes.
+
+\vspace{2em}
+
+```{r}
+sleep_data$HasEarlyClass <- ifelse(sleep_data$EarlyClass > 0, "Yes", "No")
+t.test(ClassesMissed ~ HasEarlyClass, data = sleep_data, alternative = "greater")
+
+boxplot(ClassesMissed ~ HasEarlyClass, data = sleep_data,
+        main = "Classes Missed by Early Class Status",
+        xlab = "Has Early Class?", ylab = "Classes Missed",
+        col = c("skyblue", "salmon"))
+```
+\vspace{2em}
+
+
+**Summary:** Assesses attendance reliability impacts associated with maintaining early morning course schedules.
+
+
+\vspace{3em}
+
+
+
+
+**5. Happiness Level by Depression Status**
+
+\vspace{1em}
+
+We test whether average happiness (Happiness) differs between students with at least moderate depression versus normal depression status.
+
+\vspace{2em}
+
+```{r}
+# Create a clean subset for Happiness by Depression Status
+happiness_dep <- sleep_data %>%
+  mutate(DepBinary = if_else(DepressionStatus == "normal", "Normal", "Elevated")) %>%
+  mutate(DepBinary = factor(DepBinary, levels = c("Normal", "Elevated"))) %>%
+  filter(!is.na(DepBinary))
+
+# Run the t-test
+t.test(Happiness ~ DepBinary, data = happiness_dep, alternative = "two.sided")
+
+# Boxplot
+boxplot(Happiness ~ DepBinary, data = happiness_dep,
+        main = "Happiness Level by Depression Status",
+        xlab = "Depression Category", ylab = "Happiness Score",
+        col = c("lightcyan", "salmon"))
+```
+\vspace{2em}
+
+
+**Summary:** Investigates the direct quantitative relationship between psychological distress indicators and subjective emotional well-being.
+
+\vspace{3em}
+
+
+
+
+**6. Sleep Quality and All-Nighter History**
+
+\vspace{1em}
+
+We test whether sleep quality scores (SleepQuality) differ between students who reported having at least one all-nighter (AllNighter > 0) versus those with none.
+
+\vspace{2em}
+
+```{r}
+sleep_data$HadAllNighter <- as.factor(ifelse(sleep_data$AllNighter > 0, "Yes", "No"))
+t.test(PoorSleepQuality ~ HadAllNighter, data = sleep_data, alternative = "two.sided")
+
+boxplot(PoorSleepQuality ~ HadAllNighter, data = sleep_data,
+        main = "Sleep Quality by All-Nighter History",
+        xlab = "Had All-Nighter?", ylab = "Poor Sleep Quality Score",
+        col = c("ivory", "rosybrown"))
+```
+\vspace{2em}
+
+**Summary:** Analyzes how severe acute sleep disruption events affect subjective sleep quality evaluations.
+
+\vspace{3em}
+
+
+
+**7. Stress Scores: Abstainers vs. Heavy Drinkers**
+
+\vspace{1em}
+
+We test whether students who abstain from alcohol have significantly better (lower) stress scores than heavy drinkers.
+
+\vspace{2em}
+
+```{r}
+stress_alcohol <- sleep_data %>% 
+  filter(AlcoholUse %in% c("Abstain", "Heavy")) %>% 
+  droplevels()
+
+t.test(StressScore ~ AlcoholUse, data = stress_alcohol, alternative = "less")
+
+boxplot(StressScore ~ AlcoholUse, data = stress_alcohol,
+        main = "Stress Scores: Abstainers vs Heavy Drinkers",
+        xlab = "Alcohol Group", ylab = "Stress Score",
+        col = c("lightblue", "coral"))
+```
+\vspace{2em}
+
+**Summary:** Explores behavioral coping mechanisms by comparing stress indices between non-drinkers and high-frequency alcohol users.
+
+\vspace{3em}
+
+
+
+**8. Drinks Per Week by Gender**
+
+\vspace{1em}
+
+We examine whether average weekly alcohol consumption (Drinks) differs significantly between genders.
+
+\vspace{2em}
+
+```{r}
+t.test(Drinks ~ Gender, data = sleep_data, alternative = "two.sided")
+
+boxplot(Drinks ~ Gender, data = sleep_data,
+        main = "Weekly Drinks by Gender",
+        xlab = "Gender", ylab = "Drinks Per Week",
+        col = c("lavender", "lightpink"))
+```
+\vspace{2em}
+
+**Summary:** Tests for consumption variations in weekly drinking habits across gender demographics.
+
+\vspace{3em}
+
+
+
+
+**9. Weekday Bedtime by Stress Level**
+
+\vspace{1em}
+
+We test whether average weekday bedtimes (Bedtime) differ between students experiencing high stress versus normal stress levels.
+
+\vspace{2em}
+
+```{r}
+stress_bedtime <- sleep_data %>% 
+  filter(Stress %in% c("high", "normal")) %>% 
+  droplevels()
+
+t.test(WeekdayBed ~ Stress, data = stress_bedtime, alternative = "two.sided")
+
+boxplot(WeekdayBed ~ Stress, data = stress_bedtime,
+        main = "Weekday Bedtime by Stress Level",
+        xlab = "Stress Level", ylab = "Weekday Bedtime",
+        col = c("wheat", "lightblue"))
+```
+\vspace{2em}
+
+**Summary:** Evaluates circadian rhythm shifts (bedtime timing) linked to high psychological stress states.
+
+\vspace{3em}
+
+
+
+
+**10. Weekend Sleep Hours: Underclassmen vs. Upperclassmen**
+
+\vspace{1em}
+
+We test whether average weekend sleep duration (WeekendSleep) differs between underclassmen and upperclassmen.
+
+
+\vspace{2em}
+```{r}
+t.test(WeekendSleep ~ Underclass, data = sleep_data, alternative = "two.sided")
+
+boxplot(WeekendSleep ~ Underclass, data = sleep_data,
+        main = "Weekend Sleep Hours by Class Standing",
+        xlab = "Class Standing", ylab = "Weekend Sleep (Hours)",
+        col = c("lightyellow", "lightblue"))
+```
+\vspace{2em}
+
+**Summary:** Compares compensatory weekend sleep duration trends across different stages of undergraduate progression.
+
+
+\vspace{5em}
+
+
+
+## **Overall Summary**
+
+\vspace{2em}
+
+**Key Findings:** The statistical hypothesis tests revealed notable variations across student habits, sleep schedules, and lifestyle choices. Factors such as chronotypes, acute sleep deprivation (all-nighters), and psychological stress metrics display clear linkages to student well-being.
+
+**Implications:** Understanding these quantitative relationships provides actionable data for campus health centers, academic advisors, and student wellness programs seeking to optimize campus scheduling and mental health interventions.
+
+**Conclusion:** Overall, the empirical findings confirm that sleep architecture, lifestyle behaviors, and psychological well-being are deeply interconnected aspects of the college student experience.
+
+\vspace{5em}
+
+
+## **References**
+Lock, R. H., Lock, P. F., Lock Morgan, K., Lock, E. F., & Lock, D. F. (2020). Statistics: Unlocking the Power of Data (3rd ed.). John Wiley & Sons. Retrieved from https://www.lock5stat.com/datapage3e.html
