@@ -1,0 +1,343 @@
+---
+title: '\textbf{\huge Higher Education Analytics: Institutional Characteristics, Costs, and Selectivity Metrics}'
+output: pdf_document
+date: "2026-10-28"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# Load the dataset from your local folder
+college <- read.csv("CollegeScores4yr.csv", stringsAsFactors = FALSE)
+```
+
+\vspace{2em}
+
+## **Project Questions and Analysis**
+
+
+This report analyzes institutional characteristics, costs, admissions metrics, and geographic distributions using the CollegeScores4yr dataset. Below are the ten questions analyzed using descriptive statistics and graphical methods.
+
+\vspace{2em}
+
+
+
+
+## **1. What are the central tendency and dispersion of total annual attendance cost?**
+
+\vspace{2em}
+
+```{r}
+# Question 1: Summary statistics for annual Cost
+mean_cost   <- mean(college$Cost, na.rm = TRUE)
+median_cost <- median(college$Cost, na.rm = TRUE)
+sd_cost     <- sd(college$Cost, na.rm = TRUE)
+var_cost    <- var(college$Cost, na.rm = TRUE)
+iqr_cost    <- IQR(college$Cost, na.rm = TRUE)
+
+cat("--- Question 1: College Cost Statistics ---\n")
+cat("Mean Cost:", mean_cost, "\n")
+cat("Median Cost:", median_cost, "\n")
+cat("Standard Deviation:", sd_cost, "\n")
+cat("Variance:", var_cost, "\n")
+cat("IQR:", iqr_cost, "\n\n")
+```
+
+\vspace{2em}
+
+•	Mean Cost: $34,277.31
+
+\vspace{1em}
+
+•	Median Cost: $30,699
+
+\vspace{1em}
+
+•	Standard Deviation: $15,278.54
+
+\vspace{1em}
+
+•	Variance: $233,433,900
+
+\vspace{1em}
+
+•	IQR: $23,519.25
+
+\vspace{3em}
+
+## **2. What is the distributional shape and spread of admission rates?**
+
+
+\vspace{2em}
+
+```{r}
+# Question 2: Admission Rate Distribution & Histogram
+mean_admit   <- mean(college$AdmitRate, na.rm = TRUE)
+median_admit <- median(college$AdmitRate, na.rm = TRUE)
+
+cat("--- Question 2: Admission Rate Statistics ---\n")
+cat("Mean Admit Rate:", mean_admit, "\n")
+cat("Median Admit Rate:", median_admit, "\n")
+
+# Plot a histogram for admission rates
+hist(college$AdmitRate, 
+     main = "Distribution of College Admission Rates", 
+     xlab = "Admission Rate", 
+     col = "skyblue", 
+     border = "white")
+```
+
+\vspace{2em}
+
+•	Mean Admission Rate: 67.0%
+
+\vspace{1em}
+
+•	Median Admission Rate: 69.5%(See histogram in generated plots showing the spread of institutional selectivity.)
+
+\vspace{3em}
+
+
+
+## **3. What proportions and counts of institutions fall into each control type (Public vs Private vs For-Profit)?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 3: Institutional Control Types (Categorical Analysis) ---
+tbl_control  <- table(college$Control)
+prop_control <- prop.table(tbl_control)
+
+cat("--- Question 3: Institutional Control Frequencies & Proportions ---\n")
+print(tbl_control)
+print(prop_control)
+
+# Plot a bar chart for Control types
+barplot(tbl_control, 
+        main = "Count of Institutions by Control Type", 
+        col = c("steelblue", "darkorange", "gray60"),
+        ylab = "Number of Colleges",
+        xlab = "Control Type")
+```
+
+\vspace{2em}
+
+•	Counts: Public (1,243), Private (599), For-Profit (170)
+
+\vspace{2em}
+
+•	Proportions: Public (61.78%), Private (29.77%), For-Profit (8.45%)
+
+\vspace{3em}
+
+
+## **4. How do completion rates compare across different institutional control types?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 4: Completion Rate by Institutional Control ---
+mean_completion <- tapply(college$CompRate, college$Control, mean, na.rm = TRUE)
+
+cat("\n--- Question 4: Mean Completion Rate by Control Type ---\n")
+print(mean_completion)
+
+# Plot comparative (side-by-side) boxplots
+boxplot(CompRate ~ Control, data = college,
+        main = "Completion Rate by Institutional Control Type",
+        xlab = "Control Type", 
+        ylab = "Completion Rate",
+        col = c("lightblue", "orange", "lightgray"))
+```
+
+\vspace{2em}
+
+•	Analysis using group means and comparative boxplots illustrates variations in graduation outcomes across public and private sectors.
+
+\vspace{3em}
+
+
+
+## **5. Is there a linear correlation between students' average SAT scores and total annual cost?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 5: Correlation between AvgSAT and Cost ---
+cor_sat_cost <- cor(college$AvgSAT, college$Cost, use = "complete.obs")
+
+cat("--- Question 5: Correlation (SAT vs Cost) ---\n")
+cat("Correlation Coefficient (r):", cor_sat_cost, "\n\n")
+
+# Scatterplot for SAT vs Cost
+plot(college$AvgSAT, college$Cost,
+     main = "Scatterplot: Average SAT vs. Total Cost",
+     xlab = "Average SAT Score",
+     ylab = "Total Cost ($)",
+     col = "darkblue",
+     pch = 19)
+
+```
+
+\vspace{2em}
+
+•	Correlation Coefficient (r): 0.5374 (indicating a moderate positive linear association where higher test score tiers align with higher total costs)
+
+\vspace{3em}
+
+
+
+
+## **6. What is the linear correlation between college admission rates and average SAT scores?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 6: Correlation between AdmitRate and AvgSAT ---
+cor_admit_sat <- cor(college$AdmitRate, college$AvgSAT, use = "complete.obs")
+
+cat("--- Question 6: Correlation (Admit Rate vs SAT) ---\n")
+cat("Correlation Coefficient (r):", cor_admit_sat, "\n\n")
+
+# Scatterplot for Admit Rate vs SAT
+plot(college$AdmitRate, college$AvgSAT,
+     main = "Scatterplot: Admission Rate vs. Average SAT",
+     xlab = "Admission Rate",
+     ylab = "Average SAT Score",
+     col = "darkgreen",
+     pch = 19)
+```
+
+\vspace{2em}
+
+•	Correlation Coefficient (r): -0.4221 (showing a moderate negative relationship: more selective schools with lower admission rates tend to have higher average SAT scores).
+
+\vspace{3em}
+
+
+## **7. How does average net price vary across different institutional control types?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 7: Mean Net Price by Institutional Control Type ---
+mean_netprice <- tapply(college$NetPrice, college$Control, mean, na.rm = TRUE)
+
+cat("--- Question 7: Mean Net Price by Control Type ---\n")
+print(mean_netprice)
+
+# Boxplot for Net Price by Control
+boxplot(NetPrice ~ Control, data = college,
+        main = "Net Price by Institutional Control Type",
+        xlab = "Control Type",
+        ylab = "Net Price ($)",
+        col = c("lavender", "peachpuff", "lightcyan"))
+```
+
+
+\vspace{2em}
+
+•	Mean Enrollment: Analyzed via standard deviation and median metrics to account for right-skewness in large university sizes.
+
+\vspace{2em}
+
+•	Group means show distinct net price tiers across public, private, and for-profit institutions, verified through side-by-side boxplots.
+
+\vspace{3em}
+
+
+
+
+## **8. What is the distribution and spread of undergraduate enrollment size?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 8: Summary Statistics for Undergraduate Enrollment ---
+mean_enroll   <- mean(college$Enrollment, na.rm = TRUE)
+median_enroll <- median(college$Enrollment, na.rm = TRUE)
+sd_enroll     <- sd(college$Enrollment, na.rm = TRUE)
+iqr_enroll    <- IQR(college$Enrollment, na.rm = TRUE)
+
+cat("\n--- Question 8: Undergraduate Enrollment Statistics ---\n")
+cat("Mean Enrollment:", mean_enroll, "\n")
+cat("Median Enrollment:", median_enroll, "\n")
+cat("Standard Deviation:", sd_enroll, "\n")
+cat("IQR:", iqr_enroll, "\n")
+
+# Histogram for Enrollment
+hist(college$Enrollment,
+     main = "Distribution of Undergraduate Enrollment",
+     xlab = "Enrollment Size",
+     col = "plum",
+     border = "white")
+```
+
+\vspace{2em}
+
+•	Mean Enrollment: Analyzed via standard deviation and median metrics to account for right-skewness in large university sizes.
+
+\vspace{3em}
+
+
+
+
+## **9. Is student graduate debt linearly correlated with total annual attendance cost?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 9: Correlation between Debt and Cost ---
+cor_debt_cost <- cor(college$Debt, college$Cost, use = "complete.obs")
+
+cat("--- Question 9: Correlation (Debt vs Cost) ---\n")
+cat("Correlation Coefficient (r):", cor_debt_cost, "\n\n")
+
+# Scatterplot for Debt vs Cost
+plot(college$Cost, college$Debt,
+     main = "Scatterplot: Total Cost vs. Median Debt",
+     xlab = "Total Attendance Cost ($)",
+     ylab = "Median Debt ($)",
+     col = "darkred",
+     pch = 19)
+```
+
+\vspace{2em}
+
+•	Correlation Coefficient (r): -0.2145 (showing a weak negative relationship between stated costs and median student loan debt outcomes).
+
+\vspace{3em}
+
+
+
+## **10. How are four-year colleges geographically distributed across U.S. regions?**
+
+\vspace{2em}
+
+```{r}
+# --- Question 10: Geographic Distribution by Region ---
+tbl_region  <- table(college$Region)
+prop_region <- prop.table(tbl_region)
+
+cat("--- Question 10: Institutional Frequency by Region ---\n")
+print(tbl_region)
+print(round(prop_region, 4))
+
+# Barplot for Geographic Region Distribution
+barplot(tbl_region,
+        main = "Distribution of Colleges by U.S. Region",
+        xlab = "Region",
+        ylab = "Number of Colleges",
+        col = rainbow(length(tbl_region)),
+        las = 2,
+        cex.names = 0.7)
+```
+
+\vspace{2em}
+
+
+•	Frequencies and proportions indicate regional density differences across the United States higher education landscape.
+
+
+`
